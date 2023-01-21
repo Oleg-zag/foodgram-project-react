@@ -1,23 +1,22 @@
-from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
-from rest_framework.response import Response
-from rest_framework import viewsets, status
-from recept.models import Favoriete
-from recept.models import Tag, Ingredient, Recept, IngredientReceptlink, Cart
-from .serializers import (TagSerializer,
-                          IngredientSerializer, FavoriteSerializer)
-from .serializers import Recept_Create_Update_Serializer, CartSerializer
-from .serializers import ReceptSerializer, IngredientReceptlinkSerializer
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins
-from rest_framework import filters
-from .filters import ReceptFilter, IngredientFilter
+
+from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import (AllowAny,
-                                        IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly
-                                        )
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
+from rest_framework.response import Response
+
+from recept.models import (Cart, Favoriete, Ingredient, IngredientReceptlink,
+                           Recept, Tag)
+
+from .filters import IngredientFilter, ReceptFilter
 from .permissions import IsOwnerOrReadOnly
+from .serializers import (CartSerializer, FavoriteSerializer,
+                          IngredientReceptlinkSerializer, IngredientSerializer,
+                          ReceptCreateUpdateSerializer, ReceptSerializer,
+                          TagSerializer)
 from .utils import shopping_list
 
 
@@ -38,7 +37,6 @@ class CartViewSet(CreateDeleteViewset):
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['recepet_id'] = self.kwargs.get('recipe_id')
-        print(context)
         return context
 
     def perform_create(self, serializer):
@@ -50,11 +48,9 @@ class CartViewSet(CreateDeleteViewset):
                id=id
             )
         )
-        print(f'perform_create{serializer.data}')
 
     @action(methods=('delete',), detail=True)
     def delete(self, request, recipe_id, pk=None):
-        print(request)
         user = request.user
         if not user.cart.filter(
                     recepet_id=recipe_id).exists():
@@ -76,16 +72,19 @@ class FavoriteViewSet(CartViewSet):
 
     @action(methods=('delete',), detail=True)
     def delete(self, request, recipe_id, pk=None):
-        user = request.user
-        if not user.favoriet.filter(
-                    recepet_id=recipe_id).exists():
-            return Response({'errors': 'Рецепта нет в корзине'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        get_object_or_404(
-            Favoriete,
-            user_id=request.user.id,
-            recepet_id=recipe_id).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        user = self.request.user
+        model = user.favoriet.filter(
+            recepet_id=recipe_id, user_id=user.id)
+        error = {'errors': 'Рецепта нет в избранном'}
+        return cart_fav_delete(model, error)
+
+
+def cart_fav_delete(model, error):
+    if model.exists() is False:
+        return Response(error,
+                        status=status.HTTP_400_BAD_REQUEST)
+    model.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -123,7 +122,7 @@ class ReceptViewSet(viewsets.ModelViewSet):
         if self.request.method == 'GET':
             return ReceptSerializer
         else:
-            return Recept_Create_Update_Serializer
+            return ReceptCreateUpdateSerializer
 
     def get_permissions(self):
         if self.action in ('list', 'retrieve'):

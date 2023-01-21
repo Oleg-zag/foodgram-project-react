@@ -3,8 +3,6 @@ from rest_framework.routers import DefaultRouter
 
 from api import views
 
-# from users.views import MyUserViewset
-
 router = DefaultRouter()
 router.register('tags', views.TagViewSet)
 router.register('ingredients', views.IngredientViewSet)

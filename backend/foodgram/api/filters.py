@@ -3,6 +3,8 @@ from django_filters import rest_framework as filters
 
 from recept.models import Cart, Favoriete, Ingredient, Recept, Tag
 
+from .utils import fav_cart_queryset
+
 RECEPT_CHOICES = (
     (0, 'нет'),
     (1, 'да'),
@@ -31,33 +33,33 @@ class ReceptFilter(filters.FilterSet):
         to_field_name='slug',
         queryset=Tag.objects.all()
     )
-    is_in_shopping_cart = filters.ChoiceFilter(
-        choices=RECEPT_CHOICES,
-        method='get_favorite_cart'
+    is_in_shopping_cart = filters.BooleanFilter(
+        # choices=RECEPT_CHOICES,
+        # по спецификации QUERY PARAMETERS integer Enum 0 1
+        method='get_favorite'
     )
-    is_favorited = filters.ChoiceFilter(
-        choices=RECEPT_CHOICES,
-        method='get_favorite_cart'
+    is_favorited = filters.BooleanFilter(
+        # choices=RECEPT_CHOICES,
+        # по спецификации QUERY PARAMETERS integer Enum 0 1
+        method='get_cart'
     )
 
-    def get_favorite_cart(self, queryset, name, value):
+    def get_favorite(self, queryset, name, value):
         user = self.request.user
         if user.is_authenticated:
-            if value == '1':
-                if name == 'is_favorited':
-                    receptid = []
-                    fav = Favoriete.objects.filter(
-                        user_id=user.id).values('recepet_id')
-                    for obj in fav:
-                        receptid.append(obj['recepet_id'])
-                    return queryset.filter(id__in=receptid)
-                if name == 'is_in_shopping_cart':
-                    receptid = []
-                    cart = Cart.objects.filter(
-                        user_id=user.id).values('recepet_id')
-                    for obj in cart:
-                        receptid.append(obj['recepet_id'])
-                    return queryset.filter(id__in=receptid)
+            if value is True:
+                qs = Favoriete.objects.filter(
+                    user_id=user.id).values('recepet_id')
+                return fav_cart_queryset(qs, queryset)
+        return queryset
+
+    def get_cart(self, queryset, name, value):
+        user = self.request.user
+        if user.is_authenticated:
+            if value is True:
+                qs = Cart.objects.filter(
+                    user_id=user.id).values('recepet_id')
+                return fav_cart_queryset(qs, queryset)
         return queryset
 
     class Meta:

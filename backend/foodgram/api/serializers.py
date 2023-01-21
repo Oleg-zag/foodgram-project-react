@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from rest_framework import serializers
 
 from recept.models import (Cart, Favoriete, Ingredient, IngredientReceptlink,
-                           Recept, Tag,)
+                           Recept, Tag)
 from users.serializers import MyUserSerializer
 
 
@@ -73,10 +73,11 @@ class ReceptSerializer(serializers.ModelSerializer):
         return True
 
 
-class Recept_Create_Update_Serializer(serializers.ModelSerializer):
-    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all())
-    ingredients = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredient.objects.all())
+class ReceptCreateUpdateSerializer(serializers.ModelSerializer):
+    ingredients = IngredientReceptlinkSerializer(
+        many=True,
+        source='ingrrec',
+    )
     image = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
@@ -86,15 +87,29 @@ class Recept_Create_Update_Serializer(serializers.ModelSerializer):
                   'text', 'cooking_time',)
 
     def create(self, validated_data):
-        ingredients = validated_data.pop('ingredients')
+        ingredients = validated_data.pop('ingrrec')
+        tags = validated_data.pop('tags')
         recept = Recept.objects.create(**validated_data)
-        for ingredient in ingredients:
-            current_ingredient, status = Ingredient.objects.get_or_create(
-                **ingredient)
-            IngredientReceptlink.objects.create(
-                ingredient=current_ingredient, recept=recept
-            )
+        recept.tags.set(tags)
+        self.get_ingredients(recept, ingredients)
         return recept
+
+    def get_ingredients(self, recept, ingredients):
+        IngredientReceptlink.objects.bulk_create(
+            IngredientReceptlink(
+                recept=recept,
+                ingredient_id=ingredient['ingredient']['id'],
+                quantity=ingredient['quantity'],
+            ) for ingredient in ingredients)
+
+    def update(self, recept, validated_data):
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingrrec')
+
+        IngredientReceptlink.objects.filter(recept=recept).delete()
+        recept.tags.set(tags)
+        self.get_ingredients(recept, ingredients)
+        return super().update(recept, validated_data)
 
 
 class ReceptCartFavSerializers(serializers.ModelSerializer):
