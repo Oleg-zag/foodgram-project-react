@@ -52,15 +52,10 @@ class CartViewSet(CreateDeleteViewset):
     @action(methods=('delete',), detail=True)
     def delete(self, request, recipe_id, pk=None):
         user = request.user
-        if not user.cart.filter(
-                    recepet_id=recipe_id).exists():
-            return Response({'errors': 'Рецепта нет в корзине'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        get_object_or_404(
-            Cart,
-            user_id=request.user.id,
-            recepet_id=recipe_id).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        model = user.cart.filter(
+                    recepet_id=recipe_id)
+        error = {'errors': 'Рецепта нет в корзине'}
+        return cart_fav_delete(model, error)
 
 
 class FavoriteViewSet(CartViewSet):
