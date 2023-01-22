@@ -81,7 +81,10 @@ class Recept(models.Model):
     text = models.TextField(
         verbose_name='Описание',
     )
-    cooking_time = models.PositiveIntegerField(
+    cooking_time = models.IntegerField(
+        validators=[
+            MinValueValidator(1)
+        ],
         verbose_name='Время приготовления',
     )
     ingredients = models.ManyToManyField(

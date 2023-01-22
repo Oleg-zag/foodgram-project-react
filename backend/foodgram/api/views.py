@@ -1,3 +1,4 @@
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -17,7 +18,6 @@ from .serializers import (CartSerializer, FavoriteSerializer,
                           IngredientReceptlinkSerializer, IngredientSerializer,
                           ReceptCreateUpdateSerializer, ReceptSerializer,
                           TagSerializer)
-from .utils import shopping_list
 
 
 class CreateDeleteViewset(
@@ -142,19 +142,20 @@ class ReceptViewSet(viewsets.ModelViewSet):
             return Response(
                 'В корзине нет товаров', status=status.HTTP_400_BAD_REQUEST)
         text = 'Список покупок:\n\n'
-        cart = user.cart.select_related(
-            'recepet').values(
-                'recepet_id__ingredients__name',
-                'recepet_id__ingredients__measurement_unit',
-                'recepet_id__ingredients__ingrrec__quantity')
-        cart_set = []
-        for obj in cart:
-            cart_set.append(list(obj.values()))
-        for obj in cart_set:
-            print(f'тест{obj}')
-        cart = shopping_list(cart_set)
-        for element in range(len(cart)):
-            text += (f'{cart[element]}\n')
+        cart = IngredientReceptlink.objects.filter(
+            recept__cart__user=user
+        ).values(
+            'ingredient__name',
+            'ingredient__measurement_unit',
+        ).annotate(
+            Sum('quantity')
+        ).order_by('ingredient')
+        for element in cart:
+            print(element)
+            list = []
+            for subelemet in element:
+                list.append(element[subelemet])
+            text += (f'{list}\n')
         response = HttpResponse(text, content_type='text/plain')
         filename = 'shopping_list.txt'
         response['Content-Disposition'] = f'attachment; filename={filename}'
