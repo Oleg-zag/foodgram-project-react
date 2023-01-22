@@ -151,7 +151,6 @@ class ReceptViewSet(viewsets.ModelViewSet):
             Sum('quantity')
         ).order_by('ingredient')
         for element in cart:
-            print(element)
             list = []
             for subelemet in element:
                 list.append(element[subelemet])
