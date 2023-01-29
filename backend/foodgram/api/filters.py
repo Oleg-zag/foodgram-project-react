@@ -49,7 +49,7 @@ class ReceptFilter(filters.FilterSet):
                     return queryset.filter(favoriet__user=user)
                 if name == 'is_in_shopping_cart':
                     return queryset.filter(cart__user=user)
-        # return queryset
+        return queryset
 
     class Meta:
         model = Recept
