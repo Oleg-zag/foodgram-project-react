@@ -1,7 +1,6 @@
 from djoser.serializers import UserSerializer
-from rest_framework import serializers
-
 from recept.models import Recept
+from rest_framework import serializers
 
 from .models import Subscriptions, User
 

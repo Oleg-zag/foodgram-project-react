@@ -1,8 +1,6 @@
 from django.db.models import Q
 from django_filters import rest_framework as filters
-
 from recept.models import Ingredient, Recept, Tag
-
 
 RECEPT_CHOICES = (
     (0, "нет в списке"),

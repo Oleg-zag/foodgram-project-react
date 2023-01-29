@@ -147,8 +147,6 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-#        'rest_framework.authentication.BasicAuthentication',
-#        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
@@ -167,8 +165,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-
-
 DJOSER = {
     # 'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
     'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
@@ -185,6 +181,6 @@ DJOSER = {
         'user': ['rest_framework.permissions.IsAuthenticated'],
         'user_list':
         ['rest_framework.permissions.AllowAny'],
-        #'current_user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly']
+        # 'current_user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly']
     },
 }
