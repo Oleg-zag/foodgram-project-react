@@ -32,12 +32,15 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class IngredientReceptlinkSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(source='ingredient.id')
-    name = serializers.CharField(source='ingredient.name')
-    measurement_unit = serializers.CharField(
-        source='ingredient.measurement_unit',
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all(),
         )
-    amount = serializers.FloatField(source='quantity')
+    name = serializers.ReadOnlyField(required=False, source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(
+        required=False,
+        source='ingredient.measurement_unit',
+       )
+    # amount = serializers.FloatField(source='quantity')
 
     class Meta:
         model = IngredientReceptlink
@@ -49,12 +52,11 @@ class ReceptSerializer(serializers.ModelSerializer):
     is_in_shopping_cart = serializers.SerializerMethodField()
     author = MyUserSerializer(read_only=True)
     tags = TagSerializer(read_only=True, many=True)
-    ingredients = IngredientReceptlinkSerializer(
-        read_only=True,
+    ingredients = IngredientReceptlinkSerializer(   
         many=True,
         source='ingrrec',
     )
-    image = Base64ImageField(required=False, allow_null=True)
+    image = Base64ImageField(max_length=None)
 
     class Meta:
         model = Recept
@@ -63,14 +65,15 @@ class ReceptSerializer(serializers.ModelSerializer):
                   'text', 'cooking_time',)
 
     def get_is_favorited(self, obj):
-        if Favoriete.objects.filter(recepet_id=obj.id).count() == 0:
-            return False
-        return True
+        user = self.context.get('request').user
+        return (not user.is_anonymous
+                and obj.favoriet.filter(user=user).exists())
+            
 
     def get_is_in_shopping_cart(self, obj):
-        if Cart.objects.filter(recepet_id=obj.id).count() == 0:
-            return False
-        return True
+        user = self.context.get('request').user
+        return (not user.is_anonymous
+            and obj.cart.filter(user=user).exists())
 
 
 class ReceptCreateUpdateSerializer(serializers.ModelSerializer):
@@ -78,7 +81,7 @@ class ReceptCreateUpdateSerializer(serializers.ModelSerializer):
         many=True,
         source='ingrrec',
     )
-    image = Base64ImageField(required=False, allow_null=True)
+    image = Base64ImageField(max_length=None)
 
     class Meta:
         model = Recept
@@ -94,22 +97,38 @@ class ReceptCreateUpdateSerializer(serializers.ModelSerializer):
         self.get_ingredients(recept, ingredients)
         return recept
 
-    def get_ingredients(self, recept, ingredients):
-        IngredientReceptlink.objects.bulk_create(
-            IngredientReceptlink(
-                recept=recept,
-                ingredient_id=ingredient['ingredient']['id'],
-                quantity=ingredient['quantity'],
-            ) for ingredient in ingredients)
+    @staticmethod
+    def get_ingredients(recept, ingredients):
+        ingredient_list = []
+        for ingredient_data in ingredients:
+            print(ingredient_data)
+            ingredient_list.append(
+                IngredientReceptlink(
+                    ingredient=ingredient_data.pop('id'),
+                    amount=ingredient_data.pop('amount'),
+                    recept=recept,
+                )
+            )
+        IngredientReceptlink.objects.bulk_create(ingredient_list)
 
-    def update(self, recept, validated_data):
-        tags = validated_data.pop('tags')
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.text = validated_data.get('text', instance.text)
+        instance.image = validated_data.get('image', instance.image)
+        instance.cooking_time = (
+            validated_data.get('cooking_time', instance.cooking_time)
+        )
+        instance.tags.set(validated_data.get('tags', instance.tags))
+        instance.ingredients.clear()
+        instance.save()
         ingredients = validated_data.pop('ingrrec')
+        self.get_ingredients(instance, ingredients)
+        return super().update(instance, validated_data)
 
-        IngredientReceptlink.objects.filter(recept=recept).delete()
-        recept.tags.set(tags)
-        self.get_ingredients(recept, ingredients)
-        return super().update(recept, validated_data)
+    def to_representation(self, recept):
+        return ReceptSerializer(recept, context={
+            'request': self.context.get('request')
+        }).data
 
 
 class ReceptCartFavSerializers(serializers.ModelSerializer):

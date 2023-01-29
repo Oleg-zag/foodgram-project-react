@@ -20,22 +20,24 @@ class ReceptMinified(serializers.ModelSerializer):
 
 class MyUserSerializer(UserSerializer):
 
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+    
     class Meta:
         model = User
         fields = ['email', 'id', 'username',
                   'first_name', 'last_name',
-                  'password']
+                  'password', 'is_subscribed' ]
         extra_kwargs = {
             'password': {'write_only': True}
         }
 
-    def to_representation(self, obj):
-        user = self.context['request'].user
-        representation = super().to_representation(obj)
-        representation['is_subscribed'] = Subscriptions.objects.filter(
-            subscriber=user, subscription=obj
-        ).exists()
-        return representation
+    def get_is_subscribed(self, username):
+        user = self.context["request"].user
+        return (not user.is_anonymous
+                and Subscriptions.objects.filter(
+                    subscriber=user,
+                    subscription=username
+                ).exists())
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):

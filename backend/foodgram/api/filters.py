@@ -6,8 +6,8 @@ from recept.models import Cart, Favoriete, Ingredient, Recept, Tag
 from .utils import fav_cart_queryset
 
 RECEPT_CHOICES = (
-    (0, 'нет'),
-    (1, 'да'),
+    (0, "нет в списке"),
+    (1, "в списке"),
 )
 
 
@@ -33,33 +33,25 @@ class ReceptFilter(filters.FilterSet):
         to_field_name='slug',
         queryset=Tag.objects.all()
     )
-    is_in_shopping_cart = filters.BooleanFilter(
-        # choices=RECEPT_CHOICES,
+    is_in_shopping_cart = filters.ChoiceFilter(
+        choices=RECEPT_CHOICES,
         # по спецификации QUERY PARAMETERS integer Enum 0 1
         method='get_favorite'
     )
-    is_favorited = filters.BooleanFilter(
-        # choices=RECEPT_CHOICES,
+    is_favorited = filters.ChoiceFilter(
+        choices=RECEPT_CHOICES,
         # по спецификации QUERY PARAMETERS integer Enum 0 1
-        method='get_cart'
+        method='get_favorite'
     )
 
     def get_favorite(self, queryset, name, value):
         user = self.request.user
         if user.is_authenticated:
-            if value is True:
-                qs = Favoriete.objects.filter(
-                    user_id=user.id).values('recepet_id')
-                return fav_cart_queryset(qs, queryset)
-        return queryset
-
-    def get_cart(self, queryset, name, value):
-        user = self.request.user
-        if user.is_authenticated:
-            if value is True:
-                qs = Cart.objects.filter(
-                    user_id=user.id).values('recepet_id')
-                return fav_cart_queryset(qs, queryset)
+            if value == '1':
+                if name == 'is_favorited':
+                    return queryset.filter(favoriet__user=user)
+                if name == 'is_in_shopping_cart':
+                    queryset=queryset.filter(cart__user=user)
         return queryset
 
     class Meta:

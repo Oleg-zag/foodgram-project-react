@@ -106,7 +106,6 @@ class IngredientReceptlink(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name='ingrrec',
         verbose_name='Ингредиент',
     )
     recept = models.ForeignKey(
@@ -115,7 +114,7 @@ class IngredientReceptlink(models.Model):
         verbose_name='Рецепт',
         related_name='ingrrec',
     )
-    quantity = models.FloatField(
+    amount = models.FloatField(
         verbose_name='Кол-во',
         validators=[
             MinValueValidator(0.1)
@@ -125,10 +124,10 @@ class IngredientReceptlink(models.Model):
     class Meta:
         verbose_name = 'Кол-во ингридиента в рецепте'
         verbose_name_plural = 'Кол-во ингридиента в рецепте'
-        constraints = [
-            models.UniqueConstraint(
-                fields=('recept', 'ingredient'),
-                name='unique ingredient')]
+        # constraints = [
+        #     models.UniqueConstraint(
+        #         fields=('recept', 'ingredient'),
+        #         name='unique ingredient')]
 
 
 class Favoriete(models.Model):

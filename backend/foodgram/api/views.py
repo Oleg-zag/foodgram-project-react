@@ -104,14 +104,10 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ReceptViewSet(viewsets.ModelViewSet):
     queryset = Recept.objects.all()
-    serializer_class = ReceptSerializer
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter,
-                       filters.OrderingFilter)
-    search_fields = ['author__username']
+    filter_backends = (DjangoFilterBackend,)
     ordering_fields = ['-time_update']
-    serializer_class = (ReceptSerializer)
     filterset_class = ReceptFilter
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsOwnerOrReadOnly,)
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -148,7 +144,7 @@ class ReceptViewSet(viewsets.ModelViewSet):
             'ingredient__name',
             'ingredient__measurement_unit',
         ).annotate(
-            Sum('quantity')
+            Sum('amount')
         ).order_by('ingredient')
         for element in cart:
             list = []

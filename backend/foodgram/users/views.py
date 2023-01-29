@@ -15,7 +15,8 @@ class MyUserViewSet(UserViewSet):
 
     queryset = User.objects.all()
     pagination_class = PageNumberPagination
-
+    #permission_classes=[permissions.IsAuthenticatedOrReadOnly]
+    
     @action(
         detail=True, methods=['POST', 'DELETE'],
         url_path='subscribe',
@@ -24,10 +25,9 @@ class MyUserViewSet(UserViewSet):
     def subscribe(self, request, id=None):
         user = get_object_or_404(User, id=id)
         subscription = Subscriptions.objects.filter(
-            subscriber_id=request.user,
-            subscription_id=user
+            subscriber=request.user,
+            subscription=user
         )
-        print(subscription)
         if request.method == 'POST':
             if user == request.user:
                 error = {
@@ -57,8 +57,8 @@ class MyUserViewSet(UserViewSet):
 
     @action(
         detail=False, methods=['GET'],
-        url_path='subscribtions',
-        permission_classes=[permissions.IsAuthenticatedOrReadOnly]
+        url_path='subscriptions',
+        permission_classes=[permissions.IsAuthenticated]
     )
     def subscriptions(self, request):
         pages = self.paginate_queryset(
