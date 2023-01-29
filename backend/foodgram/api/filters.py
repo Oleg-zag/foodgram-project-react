@@ -1,9 +1,8 @@
 from django.db.models import Q
 from django_filters import rest_framework as filters
 
-from recept.models import Cart, Favoriete, Ingredient, Recept, Tag
+from recept.models import Ingredient, Recept, Tag
 
-from .utils import fav_cart_queryset
 
 RECEPT_CHOICES = (
     (0, "нет в списке"),
@@ -51,7 +50,7 @@ class ReceptFilter(filters.FilterSet):
                 if name == 'is_favorited':
                     return queryset.filter(favoriet__user=user)
                 if name == 'is_in_shopping_cart':
-                    queryset=queryset.filter(cart__user=user)
+                    queryset = queryset.filter(cart__user=user)
         return queryset
 
     class Meta:

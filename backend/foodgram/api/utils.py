@@ -9,8 +9,8 @@ def shopping_list(cart):
     cart.sort()
     for object in range(len(cart)):
         compr = object
-        while compr < len(cart)-1 and cart[compr][0] == cart[compr+1][0]:
-            cart[compr+1][2] += cart[compr][2]
+        while compr < len(cart) - 1 and cart[compr][0] == cart[compr + 1][0]:
+            cart[compr + 1][2] += cart[compr][2]
             cart.pop(compr)
     return cart
 

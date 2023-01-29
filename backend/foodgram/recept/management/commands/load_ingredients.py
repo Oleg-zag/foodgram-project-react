@@ -19,6 +19,8 @@ class Command(BaseCommand):
             print('ingredient data already loaded...exiting.')
             print(ALREDY_LOADED_ERROR_MESSAGE)
             return
-        for row in DictReader(open('./static/ingredients.csv', encoding='UTF8')):
-            ingredient=Ingredient(name=row['name'], measurement_unit=row['measurement_unit'])
+        for row in DictReader(
+                open('./static/ingredients.csv', encoding='UTF8')):
+            ingredient = Ingredient(
+                name=row['name'], measurement_unit=row['measurement_unit'])
             ingredient.save()

@@ -15,8 +15,7 @@ class MyUserViewSet(UserViewSet):
 
     queryset = User.objects.all()
     pagination_class = PageNumberPagination
-    #permission_classes=[permissions.IsAuthenticatedOrReadOnly]
-    
+
     @action(
         detail=True, methods=['POST', 'DELETE'],
         url_path='subscribe',
@@ -43,8 +42,7 @@ class MyUserViewSet(UserViewSet):
                     'error': 'вы уже подписаны на пользователя'
                 }
                 return Response(error, status=status.HTTP_400_BAD_REQUEST)
-            serializer = SubscriptionSerializer(
-                                                obj,
+            serializer = SubscriptionSerializer(obj,
                                                 context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if not subscription.exists():

@@ -18,10 +18,9 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = 'Ингредиенты'
         verbose_name_plural = 'Ингредиенты'
-        constraints = [
-                models.UniqueConstraint(
-                    fields=('name', 'measurement_unit'),
-                    name='unique ingredients')]
+        constraints = [models.UniqueConstraint(
+            fields=('name', 'measurement_unit'),
+            name='unique ingredients')]
 
     def __str__(self):
         return f'{self.name} ({self.measurement_unit})'
@@ -38,7 +37,7 @@ class Tag(models.Model):
         unique=True,
         verbose_name='Цвет',
     )
-    slug = models.SlugField(max_length=200,  unique=True)
+    slug = models.SlugField(max_length=200, unique=True)
 
     def __str__(self):
         return self.name
@@ -119,7 +118,7 @@ class IngredientReceptlink(models.Model):
         validators=[
             MinValueValidator(0.1)
         ]
-        )
+    )
 
     class Meta:
         verbose_name = 'Кол-во ингридиента в рецепте'

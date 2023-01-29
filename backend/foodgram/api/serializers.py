@@ -34,12 +34,12 @@ class IngredientSerializer(serializers.ModelSerializer):
 class IngredientReceptlinkSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all(),
-        )
+    )
     name = serializers.ReadOnlyField(required=False, source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
         required=False,
         source='ingredient.measurement_unit',
-       )
+    )
     # amount = serializers.FloatField(source='quantity')
 
     class Meta:
@@ -52,7 +52,7 @@ class ReceptSerializer(serializers.ModelSerializer):
     is_in_shopping_cart = serializers.SerializerMethodField()
     author = MyUserSerializer(read_only=True)
     tags = TagSerializer(read_only=True, many=True)
-    ingredients = IngredientReceptlinkSerializer(   
+    ingredients = IngredientReceptlinkSerializer(
         many=True,
         source='ingrrec',
     )
@@ -68,12 +68,11 @@ class ReceptSerializer(serializers.ModelSerializer):
         user = self.context.get('request').user
         return (not user.is_anonymous
                 and obj.favoriet.filter(user=user).exists())
-            
 
     def get_is_in_shopping_cart(self, obj):
         user = self.context.get('request').user
         return (not user.is_anonymous
-            and obj.cart.filter(user=user).exists())
+                and obj.cart.filter(user=user).exists())
 
 
 class ReceptCreateUpdateSerializer(serializers.ModelSerializer):

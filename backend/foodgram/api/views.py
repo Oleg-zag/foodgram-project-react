@@ -5,8 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import (AllowAny, IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import (AllowAny, IsAuthenticated)
 from rest_framework.response import Response
 
 from recept.models import (Cart, Favoriete, Ingredient, IngredientReceptlink,
@@ -44,16 +43,15 @@ class CartViewSet(CreateDeleteViewset):
         serializer.save(
             user=self.request.user,
             recepet=get_object_or_404(
-               Recept,
-               id=id
+                Recept,
+                id=id
             )
         )
 
     @action(methods=('delete',), detail=True)
     def delete(self, request, recipe_id, pk=None):
         user = request.user
-        model = user.cart.filter(
-                    recepet_id=recipe_id)
+        model = user.cart.filter(recepet_id=recipe_id)
         error = {'errors': 'Рецепта нет в корзине'}
         return cart_fav_delete(model, error)
 

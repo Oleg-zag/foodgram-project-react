@@ -21,12 +21,12 @@ class ReceptMinified(serializers.ModelSerializer):
 class MyUserSerializer(UserSerializer):
 
     is_subscribed = serializers.SerializerMethodField(read_only=True)
-    
+
     class Meta:
         model = User
         fields = ['email', 'id', 'username',
                   'first_name', 'last_name',
-                  'password', 'is_subscribed' ]
+                  'password', 'is_subscribed']
         extra_kwargs = {
             'password': {'write_only': True}
         }
