@@ -108,8 +108,7 @@ class ReceptViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return ReceptSerializer
-        else:
-            return ReceptCreateUpdateSerializer
+        return ReceptCreateUpdateSerializer
 
     def get_permissions(self):
         if self.action in ('list', 'retrieve'):
