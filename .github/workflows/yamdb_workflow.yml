@@ -110,9 +110,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
-            sudo docker-compose stop
-            sudo docker-compose rm backend
-            sudo rm .env
             touch .env
             echo DJANGO_DEBUG_VALUE=False >> .env
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
