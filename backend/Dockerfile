@@ -5,12 +5,12 @@ RUN mkdir /app
 
  
 
-COPY requirements.txt ./
+COPY backend/requirements.txt ./
 
-RUN pip3 install -r requirements.txt --no-cache-dir
+RUN pip3 install -r ./requirements.txt --no-cache-dir
 
 
-COPY foodgram/ /app
+COPY backend/ ./
 
 WORKDIR /app
 
