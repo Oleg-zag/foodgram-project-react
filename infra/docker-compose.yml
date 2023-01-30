@@ -19,7 +19,7 @@ services:
     container_name: foodgram_backend
 
   frontend:
-    image: oleg787/foodgram_frontend:v1.0
+    image: oleg787/foodgram_frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
     container_name: foodgram_frontend
