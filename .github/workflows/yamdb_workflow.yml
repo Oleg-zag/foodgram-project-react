@@ -111,7 +111,7 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
             touch .env
-            echo DJANGO_DEBUG_VALUE=False >> .env
+            echo DJANGO_DEBUG_VALUE=True >> .env
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
             echo DB_NAME=${{ secrets.DB_NAME }} >> .env
