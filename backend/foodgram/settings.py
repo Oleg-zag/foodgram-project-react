@@ -27,7 +27,11 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'unsafe-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    "62.84.120.138",
+    "localhost",
+    "127.0.0.1",
+]
 
 AUTH_USER_MODEL = 'users.User'
 # Application definition
