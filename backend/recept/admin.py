@@ -11,6 +11,7 @@ class FavorieteAdmin(admin.ModelAdmin):
 class IngredientAdmin(admin.ModelAdmin):
     search_fildes = ('name',)
     list_display = ('name', 'measurement_unit')
+    list_filter = ('name',)
 
 
 class TagAdmin(admin.ModelAdmin):
