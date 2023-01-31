@@ -16,13 +16,11 @@ services:
       - db
     env_file:
       - ./.env
-    container_name: foodgram_backend
 
   frontend:
     image: oleg787/foodgram_frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
-    container_name: foodgram_frontend
 
   nginx:
     image: nginx:1.19.3
@@ -39,7 +37,6 @@ services:
     depends_on:
       - backend
       - frontend
-    container_name: foodgram_nginx
 
 volumes:
   db_value:
