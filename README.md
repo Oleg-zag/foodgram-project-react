@@ -34,7 +34,7 @@
 для Linux-систем все команды необходимо выполнять от имени администратора
 - Склонировать репозиторий
 ```bash
-git clone https://github.com/Oleg-zag/yamdb_final.git
+git clone https://github.com/Oleg-zag/fodgram-project-react.git
 ```
 - Выполнить вход на удаленный сервер
 - Установить docker на сервер:
