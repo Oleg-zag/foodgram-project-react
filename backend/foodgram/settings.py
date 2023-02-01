@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-&gt9#f9#on&w#gxiiooka(z#kskyz97y94j%a&qf(()3vbgdai
 # os.getenv('SECRET_KEY', 'unsafe-secret-key')
 # 'django-insecure-&gt9#f9#on&w#gxiiooka(z#kskyz97y94j%a&qf(()3vbgdai'
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
