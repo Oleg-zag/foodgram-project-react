@@ -1,6 +1,9 @@
 import base64
 
+from django.db.models import F 
+
 from django.core.files.base import ContentFile
+from rest_framework.fields import IntegerField
 from recept.models import (Cart, Favoriete, Ingredient, IngredientReceptlink,
                            Recept, Tag)
 from rest_framework import serializers
@@ -31,19 +34,17 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class IngredientReceptlinkSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredient.objects.all(),
-    )
-    name = serializers.ReadOnlyField(required=False, source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(
-        required=False,
-        source='ingredient.measurement_unit',
-    )
+    id = IntegerField(write_only=True)
+    # name = serializers.ReadOnlyField(required=False, source='ingredient.name')
+    # measurement_unit = serializers.ReadOnlyField(
+    #    required=False,
+    #    source='ingredient.measurement_unit',
+    # )
     # amount = serializers.FloatField(source='quantity')
 
     class Meta:
         model = IngredientReceptlink
-        fields = ('id', 'name', 'measurement_unit', 'amount')
+        fields = ('id', 'amount')
 
 
 class ReceptSerializer(serializers.ModelSerializer):
@@ -51,10 +52,7 @@ class ReceptSerializer(serializers.ModelSerializer):
     is_in_shopping_cart = serializers.SerializerMethodField()
     author = MyUserSerializer(read_only=True)
     tags = TagSerializer(read_only=True, many=True)
-    ingredients = IngredientReceptlinkSerializer(
-        many=True,
-        source='ingrrec',
-    )
+    ingredients = serializers.SerializerMethodField()
     image = Base64ImageField(max_length=None)
 
     class Meta:
@@ -62,6 +60,16 @@ class ReceptSerializer(serializers.ModelSerializer):
         fields = ('id', 'tags', 'author', 'ingredients',
                   'is_favorited', 'is_in_shopping_cart', 'image', 'name',
                   'text', 'cooking_time',)
+
+    def get_ingredients(self, obj):
+        recept = obj
+        ingredients = recept.ingredients.values(
+            'id',
+            'name',
+            'measurement_unit',
+            amount=F('ingredientreceptlink__amount')
+        )
+        return ingredients
 
     def get_is_favorited(self, obj):
         user = self.context.get('request').user
@@ -77,7 +85,7 @@ class ReceptSerializer(serializers.ModelSerializer):
 class ReceptCreateUpdateSerializer(serializers.ModelSerializer):
     ingredients = IngredientReceptlinkSerializer(
         many=True,
-        source='ingrrec',
+        # source='ingrrec',
     )
     image = Base64ImageField(max_length=None)
 
@@ -88,7 +96,7 @@ class ReceptCreateUpdateSerializer(serializers.ModelSerializer):
                   'text', 'cooking_time',)
 
     def create(self, validated_data):
-        ingredients = validated_data.pop('ingrrec')
+        ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         recept = Recept.objects.create(**validated_data)
         recept.tags.set(tags)
@@ -97,31 +105,24 @@ class ReceptCreateUpdateSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_ingredients(recept, ingredients):
-        ingredient_list = []
-        for ingredient_data in ingredients:
-            print(ingredient_data)
-            ingredient_list.append(
-                IngredientReceptlink(
-                    ingredient=ingredient_data.pop('id'),
-                    amount=ingredient_data.pop('amount'),
-                    recept=recept,
-                )
-            )
-        IngredientReceptlink.objects.bulk_create(ingredient_list)
+        IngredientReceptlink.objects.bulk_create(
+            [IngredientReceptlink(
+                ingredient=Ingredient.objects.get(id=ingredient['id']),
+                recept=recept,
+                amount=ingredient['amount']
+            )for ingredient in ingredients]
+        )
 
     def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
-        instance.text = validated_data.get('text', instance.text)
-        instance.image = validated_data.get('image', instance.image)
-        instance.cooking_time = (
-            validated_data.get('cooking_time', instance.cooking_time)
-        )
-        instance.tags.set(validated_data.get('tags', instance.tags))
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
+        instance = super().update(instance, validated_data)
+        instance.tags.clear()
+        instance.tags.set(tags)
         instance.ingredients.clear()
+        self.get_ingredients(recept=instance, ingredients=ingredients)
         instance.save()
-        ingredients = validated_data.pop('ingrrec')
-        self.get_ingredients(instance, ingredients)
-        return super().update(instance, validated_data)
+        return instance
 
     def to_representation(self, recept):
         return ReceptSerializer(recept, context={

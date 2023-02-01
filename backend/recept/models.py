@@ -130,7 +130,6 @@ class IngredientReceptlink(models.Model):
 class Favoriete(models.Model):
     recepet = models.ForeignKey(
         Recept,
-        unique=False,
         on_delete=models.CASCADE,
         related_name='favoriet',
         verbose_name='Рецепт',
@@ -150,7 +149,6 @@ class Favoriete(models.Model):
 class Cart(models.Model):
     recepet = models.ForeignKey(
         Recept,
-        unique=True,
         on_delete=models.CASCADE,
         related_name='cart',
         verbose_name='Рецепт',)
