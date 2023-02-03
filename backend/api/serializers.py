@@ -8,7 +8,7 @@ from recept.models import (Cart, Favoriete, Ingredient, IngredientReceptlink,
                            Recept, Tag)
 from rest_framework import serializers
 from users.serializers import MyUserSerializer
-from rest_framework.exceptions import ValidationError
+# from rest_framework.exceptions import ValidationError
 
 
 class Base64ImageField(serializers.ImageField):
@@ -89,14 +89,14 @@ class ReceptCreateUpdateSerializer(serializers.ModelSerializer):
                   'name',
                   'text', 'cooking_time',)
 
-    def validate_name(self, value):
+    def validate_name(self, data):
         name = self.context.get('name')
         # user = self.context.get('request').user
         if Recept.objects.filter(name=name).exists():
-            raise ValidationError({
+            raise serializers.ValidationError({
                 'У Вас уже есть рецепт с таким именем'
             })
-        return value
+        return data
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')

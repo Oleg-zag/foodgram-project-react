@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-&gt9#f9#on&w#gxiiooka(z#kskyz97y94j%a&qf(()3vbgdai
 # os.getenv('SECRET_KEY', 'unsafe-secret-key')
 # 'django-insecure-&gt9#f9#on&w#gxiiooka(z#kskyz97y94j%a&qf(()3vbgdai'
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -145,6 +145,8 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
