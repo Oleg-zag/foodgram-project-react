@@ -91,8 +91,8 @@ class ReceptCreateUpdateSerializer(serializers.ModelSerializer):
 
     def validate_name(self, value):
         name = self.context.get('name')
-        user = self.context.get('request').user
-        if Recept.objects.filter(author=user, name=name).exists():
+        # user = self.context.get('request').user
+        if Recept.objects.filter(name=name).exists():
             raise ValidationError({
                 'У Вас уже есть рецепт с таким именем'
             })
