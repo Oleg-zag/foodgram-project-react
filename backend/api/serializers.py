@@ -1,6 +1,6 @@
 import base64
 
-from django.db.models import F 
+from django.db.models import F
 
 from django.core.files.base import ContentFile
 from rest_framework.fields import IntegerField
@@ -36,12 +36,6 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class IngredientReceptlinkSerializer(serializers.ModelSerializer):
     id = IntegerField(write_only=True)
-    # name = serializers.ReadOnlyField(required=False, source='ingredient.name')
-    # measurement_unit = serializers.ReadOnlyField(
-    #    required=False,
-    #    source='ingredient.measurement_unit',
-    # )
-    # amount = serializers.FloatField(source='quantity')
 
     class Meta:
         model = IngredientReceptlink
@@ -96,9 +90,9 @@ class ReceptCreateUpdateSerializer(serializers.ModelSerializer):
                   'text', 'cooking_time',)
 
     def validate_name(self, value):
-        name = value
+        name = self.context.get('name')
         user = self.context.get('request').user
-        if Recept.objects.filter(author=user, name=name).exists is True:
+        if Recept.objects.filter(author=user, name=name).exists() is True:
             raise ValidationError({
                 'У Вас уже есть рецепт с таким именем'
             })
