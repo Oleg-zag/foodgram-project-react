@@ -85,7 +85,6 @@ class ReceptSerializer(serializers.ModelSerializer):
 class ReceptCreateUpdateSerializer(serializers.ModelSerializer):
     ingredients = IngredientReceptlinkSerializer(
         many=True,
-        # source='ingrrec',
     )
     image = Base64ImageField(max_length=None)
 

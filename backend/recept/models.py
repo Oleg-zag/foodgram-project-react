@@ -97,6 +97,7 @@ class Recept(models.Model):
     class Meta:
         verbose_name = 'Рецепты'
         verbose_name_plural = 'Рецепты'
+        ordering = ['-time_update']
 
 
 class IngredientReceptlink(models.Model):
